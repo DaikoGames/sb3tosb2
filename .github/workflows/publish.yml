@@ -61,11 +61,21 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
+          # This downloads every matrix artifact into individual subfolders
           path: all-artifacts
           
+      - name: Flatten Artifact Directory
+        run: |
+          mkdir release-assets
+          # Find all files inside 'all-artifacts' and move them directly into 'release-assets'
+          find all-artifacts/ -type f -exec cp {} release-assets/ \;
+          ls -R release-assets/ # Optional: Prints the files in the logs to verify
+
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-
+          # Tells the action exactly which git tag to create the release for
+          tag_name: ${{ github.ref_name }}
+          # Points to the newly created folder containing all the flattened executables
           files: release-assets/*
           generate_release_notes: true
