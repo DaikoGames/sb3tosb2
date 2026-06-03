@@ -64,4 +64,5 @@ jobs:
         with:
           artifacts: "all-artifacts/**/*"
           tag: ${{ github.ref_name }}
+          allowUpdates: true
           generateReleaseNotes: true
