@@ -1,0 +1,50 @@
+name: Build Python Executables
+
+on:
+  push:
+    tags: ['v*']          
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: windows-x64
+          - os: windows-11-arm
+            artifact: windows-arm64
+          - os: ubuntu-latest
+            artifact: linux-x64
+          - os: ubuntu-24.04-arm
+            artifact: linux-arm64
+          - os: macos-26
+            artifact: macos-arm64
+          - os: macos-26-intel
+            artifact: macos-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install audioop-lts
+
+      - name: Build executable
+        run: pyinstaller --onefile --clean sb3tosb2.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/
