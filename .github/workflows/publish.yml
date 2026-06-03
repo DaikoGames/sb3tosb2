@@ -35,18 +35,17 @@ jobs:
           python-version: '3.12'
 
       - name: Install PyInstaller
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-
+        run: pip install pyinstaller
+        
       - name: Build executable
-        run: pyinstaller --onefile --clean sb3tosb2.py
+        run: pyinstaller --onefile --clean --name sb3tosb2-${{ matrix.artifact }} sb3tosb2.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: dist/
+
   release:
     name: Create Single GitHub Release
     needs: build
@@ -55,27 +54,14 @@ jobs:
       contents: write 
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          # This downloads every matrix artifact into individual subfolders
           path: all-artifacts
           
-      - name: Flatten Artifact Directory
-        run: |
-          mkdir release-assets
-          # Find all files inside 'all-artifacts' and move them directly into 'release-assets'
-          find all-artifacts/ -type f -exec cp {} release-assets/ \;
-          ls -R release-assets/ # Optional: Prints the files in the logs to verify
-
-      - name: Create Release and Upload Assets
-        uses: softprops/action-gh-release@v2
+      - name: Create Release
+        uses: ncipollo/release-action@v1
         with:
-          # Tells the action exactly which git tag to create the release for
-          tag_name: ${{ github.ref_name }}
-          # Points to the newly created folder containing all the flattened executables
-          files: release-assets/*
-          generate_release_notes: true
+          artifacts: "all-artifacts/**/*"
+          tag: ${{ github.ref_name }}
+          generateReleaseNotes: true
