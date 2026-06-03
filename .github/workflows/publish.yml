@@ -38,7 +38,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          pip install audioop-lts
 
       - name: Build executable
         run: pyinstaller --onefile --clean sb3tosb2.py
